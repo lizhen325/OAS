@@ -10,6 +10,11 @@ namespace OA.DAL
 {
     public class BaseDAL<T> where T: class,new()
     {
+        /// <summary>
+        /// Load Entity
+        /// </summary>
+        /// <param name="whereLambda"></param>
+        /// <returns></returns>
         public IQueryable<T> LoadEntities(Expression<Func<T,bool>> whereLambda)
         {
             using(var dbcontext = new OAEntities())
