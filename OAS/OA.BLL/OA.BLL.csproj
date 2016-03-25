@@ -42,6 +42,16 @@
     <Compile Include="BaseBLL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OA.DAL\OA.DAL.csproj">
+      <Project>{07535c0b-cb14-4c3d-adf3-12df968a7670}</Project>
+      <Name>OA.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OA.Moel\OA.Moel.csproj">
+      <Project>{712df9b7-1f68-4117-8676-b30d8c388c70}</Project>
+      <Name>OA.Moel</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
