@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using OA.BLL;
 
 namespace OA.UI.API
 {
@@ -27,6 +28,7 @@ namespace OA.UI.API
     public class UserInfosController : ApiController
     {
         private readonly OAEntities dbcontext = new OAEntities();
+        private readonly UserInfoBLL bll = new UserInfoBLL();
         // GET api/<controller>
         public IQueryable<UserInfoView> Get()
         {
@@ -48,10 +50,23 @@ namespace OA.UI.API
             return userinfoList;
         }
 
-        // GET api/<controller>/5
-        public string Get(int id)
+        // GET api/UserInfos/id
+        public UserInfoView Get(int id)
         {
-            return "value";
+            var userinfo = dbcontext.UserInfo.FirstOrDefault(u => u.id == id);
+            UserInfoView uiv = new UserInfoView();
+                uiv.UserName = userinfo.UserName;
+                uiv.UserPassword = userinfo.UserPassword;
+                uiv.DateOfBirth = userinfo.DateOfBirth;
+                uiv.Address = userinfo.Address;
+                uiv.Nationality = userinfo.Nationality;
+                uiv.Email = userinfo.Email;
+                uiv.Occupation = userinfo.Occupation;
+                uiv.FullName = userinfo.FullName;
+                uiv.DelFlag = userinfo.DelFlag;
+                uiv.ModifiedTime = userinfo.ModifiedTime;
+                uiv.JoinTime = userinfo.JoinTime;
+                return uiv;
         }
 
         // POST api/<controller>
