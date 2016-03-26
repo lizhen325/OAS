@@ -7,11 +7,329 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <title>Index</title>
+    <title>GetUserInfo</title>
+    <link href="~/Content/themes/default/easyui.css" rel="stylesheet" />
+    <link href="~/Content/themes/icon.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.8.2.min.js"></script>
+    <script src="~/Scripts/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/datapattern.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            loadData();
+            $('#btnSearch').click(function () {
+                var pairs = {
+                    name: $('#txtUserName').val(),
+                    email: $('#txtEmail').val()
+                };
+                loadData(pairs);
+            });
+        });
+        function loadData() {
+            $('#tt').datagrid({
+                url: '/UserInfo/GetUserInfo',
+                title: 'UserInfo Table',
+                width: 1000,
+                height: 400,
+                fitColumns: true,
+                nowrap: false,
+                idField: 'ID',//Primary key
+                loadMsg: 'Loading...',
+                pagination: true,
+                singleSelect: false,
+                pageSize: 5,
+                pageNumber: 1,
+                pageList: [5, 10, 15],
+                queryParams: {},
+                columns: [[
+                { field: 'ck', checkbox: true, align: 'left'},
+                { field: 'ID', title: 'ID' },
+                { field: 'UserName', title: 'UserName' },
+                { field: 'UserPassword', title: 'UserPassword' },
+                { field: 'DateOfBirth', title: 'DateOfBirth' },
+                { field: 'Address', title: 'Address' },
+                { field: 'Nationality', title: 'Nationality' },
+                { field: 'Email', title: 'Email' },
+                { field: 'Occupation', title: 'Occupation' },
+                { field: 'FullName', title: 'FullName' },
+                { field: 'Delflag', title: 'Status' },
+                {
+                    field: 'JoinTime', title: 'JoinTime', align: 'right',
+                    formatter: function (value, row, index) {
+                        return (eval(value.replace(/\/Date\((\d+)\)\//gi, "new Date($1)"))).pattern("yyyy-M-d");
+                    }
+                }
+                ]],
+                //delete
+                toolbar: [{
+                    id: 'btnDelete',
+                    text: 'Delete',
+                    iconCls: 'icon-remove',
+                    handler: function () {
+                        var rows = $('#tt').datagrid('getSelections');
+                        if (!rows || rows.length == 0) {
+                            $.messager.alert("Alert", "Please Select at least one record", "error");
+                            return;
+                        }
+                        $.messager.confirm("Confirm", "Are you sure to delete?", function (r) {
+                            if (r) {
+                                var strId = "";
+                                for (var i = 0; i < rows.length; i++) {
+                                    strId += rows[i].ID + ",";//1,2,3,
+                                }
+                                strId = strId.substr(0, strId.length - 1);
+                                $.post("/UserInfo/DeleteUserInfo", { "strId": strId }, function (data) {
+                                    if (data == "ok") {
+                                        $.messager.alert("Success", "Success to Delete");
+                                        $('#tt').datagrid('clearSelections');
+                                        $('#tt').datagrid('reload');
+                                    } else if (data == "no") {
+                                        $.messager.alert("Alert", "Fail to Delete", "error");
+                                    }
+                                });
+                            }
+                        })
+                    }
+                }, {
+                    //Add
+                    id: 'btnAdd',
+                    text: 'Add',
+                    iconCls: 'icon-add',
+                    handler: function () {
+                        $('#addDiv').css('display', 'block');
+                        $('#addDiv').dialog({
+                            title:"Add Users",
+                            buttons: [{
+                                text: "Add",
+                                iconCls: 'icon-ok',
+                                handler: function () {
+                                    $('#addForm').submit();
+                                }
+                            }, {
+                                text: 'Cancel',
+                                handler: function () {
+                                    $('#addDiv').dialog('close');
+                                }
+                            }]
+                        });
+
+                    }
+                }, {
+                    //Update
+                    id: 'btnEdit',
+                    text: 'Edit',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        var rows = $('#tt').datagrid('getSelections');
+                        if (rows.length != 1) {
+                            $.messager.alert("alert", "Please Select One", 'error');
+                            return;
+                        }
+                        $.post('/UserInfo/GetUserInfoModel', { 'id': rows[0].ID }, function (data) {
+                            var data = $.parseJSON(serverData);
+                            if (data.msg == "ok") {
+                                $('#txtname').val(data.serverData.UserName);
+                                $('#txtpassword').val(data.serverData.UserPassword);
+                                $('#txtbirth').val(data.serverData.DateOfBirth);
+                                $('#txtaddress').val(data.serverData.Address);
+                                $('#txtnationality').val(data.serverData.Nationality);
+                                $('#txtemail').val(data.serverData.Email);
+                                $('#txtoccupation').val(data.serverData.Occupation);
+                                $('#txtfullname').val(data.serverData.FullName);
+                                $('#txtjointime').val(ChangeDateFormat(data.serverData.JoinTime));
+                                $('#txtdelflag').val(data.serverData.DelFlag);
+                                $('#txtmodifiedtime').val(ChangeDateFormat(data.serverData.ModifiedTime));
+                                $('#txtid').val(data.serverData.id);
+                                $('#updateDiv').css('display', 'block');
+                                $('#updateDiv').dialog({
+                                    title: "Update Users",
+                                    buttons: [{
+                                        text: "Update",
+                                        iconCls: 'icon-ok',
+                                        handler: function () {
+                                            $('#updateForm').submit();
+                                        }
+                                    }, {
+                                        text: 'Cancel',
+                                        handler: function () {
+                                            $('#updateDiv').dialog('close');
+                                        }
+                                    }]
+                                });
+                            } else if (data.msg == "no") {
+                                $.messager.alert("alert", "Fail to Load!!", "error");
+                            }
+                        });
+                    }
+                },
+                //SetRole
+                {
+                    id: 'btnRoleEdit',
+                    text: 'Assigning Roles',
+                    iconCls: 'icon-edit',
+                    handler: function () {
+                        var rows = $('#tt').datagrid('getSelections');
+                        if (rows.length != 1) {
+                            $.messager.alert("alert", "Please Select One", 'error');
+                            return;
+                        }
+                        $('#setRoleFrame').attr("src", "/UserInfo/SetRoleInfo/?userid=" + rows[0].ID);
+                        $("#setRoleDiv").css("display", "block");
+                        $('#setRoleDiv').dialog({
+                            title: "Set Roles",
+                            buttons: [{
+                                text: "Set",
+                                iconCls: 'icon-ok',
+                                handler: function () {
+                                    var childwindow = $('#setRoleFrame')[0].contentWindow;
+                                    childwindow.subForm();
+                                }
+                            }, {
+                                text: 'Cancel',
+                                handler: function () {
+                                    $('#setRoleDiv').dialog('close');
+                                }
+                            }]
+                        });
+                    }
+                }]
+            });
+        }
+        function setUserRoleAfter(data) {
+            if (data == "ok") {
+                $('#setRoleDiv').dialog('close');
+            } else {
+
+            }
+        }
+
+        function afterAdd(data) {
+            if (data == 'ok') {
+                $('#addForm input').val('');
+                $('#addDiv').dialog('close');
+                $('#tt').datagrid('reload');
+            } else {
+                $.messager.alert("Alert", "Fail to Add", "error");
+            }
+        }
+
+        function afterUpdate(data) {
+            if (data == "ok") {
+                $.messager.alert("success", "success to update", "success");
+                $('#updateForm input').val('');
+                $('#updateDiv').dialog('close');
+                $('#tt').datagrid('reload');
+            } else {
+                $.messager.alert("Alert", "Fail to Update", "error");
+            }
+        }
+
+        function ChangeDateFormat(cellval) {
+            var date = new Date(parseInt(cellval.replace("/Date(", "").replace(")/", ""), 10));
+            var month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
+            var currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+            return date.getFullYear() + "-" + month + "-" + currentDate;
+        }
+
+
+    </script>
 </head>
 <body>
-    <div>
-        
+    <div class="tabs-container">
+        UserName:<input type="text" id="txtUserName" />&nbsp;&nbsp; Email: <input type="text" id="txtEmail" /><input type="button" value="Search" id="btnSearch" />
+        <table id="tt" style="width: 700px;" iconcls="icon-edit"></table>
+    </div>
+    @* Add UserInfo Form *@
+    <div id="addDiv" style="display:none">
+        @using (Ajax.BeginForm("AddUserInfo", "UserInfo", new { }, new AjaxOptions() { HttpMethod = "post", OnSuccess = "afterAdd" }, new { id = "addForm" }))
+        {
+            <table>
+                <tr>
+                    <td>UserName: </td>
+                    <td><input type="text" name="userName" /></td>
+                </tr>
+                <tr>
+                    <td>UserPassword: </td>
+                    <td><input type="password" name="UserPassword" /></td>
+                </tr>
+                <tr>
+                    <td>DateOfBirth: </td>
+                    <td><input type="text" name="DateOfBirth" /></td>
+                </tr>
+                <tr>
+                    <td>Address: </td>
+                    <td><input type="text" name="Address" /></td>
+                </tr>
+                <tr>
+                    <td>Nationality: </td>
+                    <td><input type="text" name="Nationality" /></td>
+                </tr>
+                <tr>
+                    <td>Email: </td>
+                    <td><input type="text" name="Email" /></td>
+                </tr>
+                <tr>
+                    <td>Occupation: </td>
+                    <td><input type="text" name="Occupation" /></td>
+                </tr>
+                <tr>
+                    <td>Full Name: </td>
+                    <td><input type="text" name="FullName" /></td>
+                </tr>
+
+            </table>
+        }
+    </div>
+
+    @* Update UserInfo Form *@
+    <div id="updateDiv" style="display:none">
+        @using (Ajax.BeginForm("UpdateUserInfo", "UserInfo", new { }, new AjaxOptions() { HttpMethod = "post", OnSuccess = "afterUpdate" }, new { id = "updateForm" }))
+        {
+            <input type="hidden" name="joinTime" id="txtjointime" />
+            <input type="hidden" name="delflag" id="txtdelflag" />
+            <input type="hidden" name="modifiedtime" id="txtmodifiedtime" />
+            <input type="hidden" name="id" id="txtid" />
+            <table>
+                <tr>
+                    <td>UserName: </td>
+                    <td><input type="text" name="userName" id="txtname" /></td>
+                </tr>
+                <tr>
+                    <td>UserPassword: </td>
+                    <td><input type="password" name="UserPassword" id="txtpassword" /></td>
+                </tr>
+                <tr>
+                    <td>DateOfBirth: </td>
+                    <td><input type="text" name="DateOfBirth" id="txtbirth" /></td>
+                </tr>
+                <tr>
+                    <td>Address: </td>
+                    <td><input type="text" name="Address" id="txtaddress" /></td>
+                </tr>
+                <tr>
+                    <td>Nationality: </td>
+                    <td><input type="text" name="Nationality" id="txtnationality" /></td>
+                </tr>
+                <tr>
+                    <td>Email: </td>
+                    <td><input type="text" name="Email" id="txtemail" /></td>
+                </tr>
+                <tr>
+                    <td>Occupation: </td>
+                    <td><input type="text" name="Occupation" id="txtoccupation" /></td>
+                </tr>
+                <tr>
+                    <td>Full Name: </td>
+                    <td><input type="text" name="FullName" id="txtfullname" /></td>
+                </tr>
+
+            </table>
+        }
+    </div>
+
+    @* Assigning Roles *@
+    <div id="setRoleDiv" style="display:none">
+        <iframe id="setRoleFrame" scrolling="no" width="100%" height="100%" frameborder="0"></iframe>
     </div>
 </body>
 </html>

@@ -66,5 +66,10 @@ namespace OA.BLL
         {
             return dal.InsertEntity(entity);
         }
+
+        public void Dispose()
+        {
+            dal.Dispose();
+        }
     }
 }

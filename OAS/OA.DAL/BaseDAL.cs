@@ -8,19 +8,17 @@ using System.Linq.Expressions;
 
 namespace OA.DAL
 {
-    public class BaseDAL<T> where T: class,new()
+    public class BaseDAL<T> where T : class,new()
     {
+        private readonly OAEntities dbcontext = new OAEntities();
         /// <summary>
         /// Load Entity
         /// </summary>
         /// <param name="whereLambda"></param>
         /// <returns></returns>
-        public IQueryable<T> LoadEntities(Expression<Func<T,bool>> whereLambda)
+        public IQueryable<T> LoadEntities(Expression<Func<T, bool>> whereLambda)
         {
-            using(var dbcontext = new OAEntities())
-            {
-                return dbcontext.Set<T>().Where<T>(whereLambda);
-            }
+            return dbcontext.Set<T>().Where<T>(whereLambda);
         }
 
         /// <summary>
@@ -34,22 +32,19 @@ namespace OA.DAL
         /// <param name="orderByLambda"></param>
         /// <param name="IsArc">tru, arc; false, desc</param>
         /// <returns></returns>
-        public IQueryable<T> LoadPageEntities<s>(int pageIndex, int pageSize, out int totalCount, Expression<Func<T,bool>> whereLambda, Expression<Func<T,s>> orderByLambda, bool IsArc)
+        public IQueryable<T> LoadPageEntities<s>(int pageIndex, int pageSize, out int totalCount, Expression<Func<T, bool>> whereLambda, Expression<Func<T, s>> orderByLambda, bool IsArc)
         {
-            using(var dbcontext = new OAEntities())
+            var temp = dbcontext.Set<T>().Where<T>(whereLambda);
+            totalCount = temp.Count();
+            if (IsArc)
             {
-                var temp = dbcontext.Set<T>().Where<T>(whereLambda);
-                totalCount = temp.Count();
-                if(IsArc)
-                {
-                    temp = temp.OrderBy<T, s>(orderByLambda).Skip<T>((pageIndex - 1) * pageSize).Take<T>(pageSize);
-                }
-                else
-                {
-                    temp = temp.OrderByDescending<T, s>(orderByLambda).Skip<T>((pageIndex - 1) * pageSize).Take<T>(pageSize);
-                }
-                return temp;
+                temp = temp.OrderBy<T, s>(orderByLambda).Skip<T>((pageIndex - 1) * pageSize).Take<T>(pageSize);
             }
+            else
+            {
+                temp = temp.OrderByDescending<T, s>(orderByLambda).Skip<T>((pageIndex - 1) * pageSize).Take<T>(pageSize);
+            }
+            return temp;
         }
 
         /// <summary>
@@ -59,11 +54,8 @@ namespace OA.DAL
         /// <returns></returns>
         public bool DeleteEntity(T entity)
         {
-            using(var dbcontext = new OAEntities())
-            {
-                dbcontext.Entry<T>(entity).State = System.Data.Entity.EntityState.Deleted;
-                return dbcontext.SaveChanges() > 0;
-            }
+            dbcontext.Entry<T>(entity).State = System.Data.Entity.EntityState.Deleted;
+            return dbcontext.SaveChanges() > 0;
         }
 
         /// <summary>
@@ -73,11 +65,8 @@ namespace OA.DAL
         /// <returns></returns>
         public bool UpdateEntity(T entity)
         {
-            using(var dbcontext = new OAEntities())
-            {
-                dbcontext.Entry<T>(entity).State = System.Data.Entity.EntityState.Modified;
-                return dbcontext.SaveChanges() > 0;
-            }
+            dbcontext.Entry<T>(entity).State = System.Data.Entity.EntityState.Modified;
+            return dbcontext.SaveChanges() > 0;
         }
 
         /// <summary>
@@ -87,12 +76,14 @@ namespace OA.DAL
         /// <returns></returns>
         public T InsertEntity(T entity)
         {
-            using(var dbcontext = new OAEntities())
-            {
-                dbcontext.Set<T>().Add(entity);
-                dbcontext.SaveChanges();
-                return entity;
-            }
+            dbcontext.Set<T>().Add(entity);
+            dbcontext.SaveChanges();
+            return entity;
+        }
+
+        public void Dispose()
+        {
+            dbcontext.Dispose();
         }
     }
 }
