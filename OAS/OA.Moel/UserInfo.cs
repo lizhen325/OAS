@@ -11,6 +11,7 @@ namespace OA.Moel
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     
     public partial class UserInfo
     {
@@ -19,7 +20,7 @@ namespace OA.Moel
         {
             this.RoleInfo = new HashSet<RoleInfo>();
         }
-    
+        [Key]
         public int id { get; set; }
         public string UserName { get; set; }
         public string UserPassword { get; set; }
