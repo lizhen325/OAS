@@ -1,10 +1,10 @@
-﻿using System;
+﻿using OA.Moel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
+using System.Net.Http;
 using System.Web.Http;
-using System.Web.Mvc;
-using OA.Moel;
 
 namespace OA.UI.API
 {
@@ -23,11 +23,12 @@ namespace OA.UI.API
         public DateTime? ModifiedTime { get; set; }
         public System.DateTime JoinTime { get; set; }
     }
-    public class UserInfoController : ApiController
+
+    public class UserInfosController : ApiController
     {
         private readonly OAEntities dbcontext = new OAEntities();
-        //api/UserInfo
-        public IQueryable<UserInfoView> GetUserInfo()
+        // GET api/<controller>
+        public IQueryable<UserInfoView> Get()
         {
             var userinfoList = dbcontext.UserInfo.Select(u => new UserInfoView
             {
@@ -47,5 +48,25 @@ namespace OA.UI.API
             return userinfoList;
         }
 
+        // GET api/<controller>/5
+        public string Get(int id)
+        {
+            return "value";
+        }
+
+        // POST api/<controller>
+        public void Post([FromBody]string value)
+        {
+        }
+
+        // PUT api/<controller>/5
+        public void Put(int id, [FromBody]string value)
+        {
+        }
+
+        // DELETE api/<controller>/5
+        public void Delete(int id)
+        {
+        }
     }
 }
