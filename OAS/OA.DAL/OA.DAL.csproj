@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="BaseDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserInfoDAL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OA.Moel\OA.Moel.csproj">
