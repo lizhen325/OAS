@@ -55,18 +55,18 @@ namespace OA.UI.API
         {
             var userinfo = dbcontext.UserInfo.FirstOrDefault(u => u.id == id);
             UserInfoView uiv = new UserInfoView();
-                uiv.UserName = userinfo.UserName;
-                uiv.UserPassword = userinfo.UserPassword;
-                uiv.DateOfBirth = userinfo.DateOfBirth;
-                uiv.Address = userinfo.Address;
-                uiv.Nationality = userinfo.Nationality;
-                uiv.Email = userinfo.Email;
-                uiv.Occupation = userinfo.Occupation;
-                uiv.FullName = userinfo.FullName;
-                uiv.DelFlag = userinfo.DelFlag;
-                uiv.ModifiedTime = userinfo.ModifiedTime;
-                uiv.JoinTime = userinfo.JoinTime;
-                return uiv;
+            uiv.UserName = userinfo.UserName;
+            uiv.UserPassword = userinfo.UserPassword;
+            uiv.DateOfBirth = userinfo.DateOfBirth;
+            uiv.Address = userinfo.Address;
+            uiv.Nationality = userinfo.Nationality;
+            uiv.Email = userinfo.Email;
+            uiv.Occupation = userinfo.Occupation;
+            uiv.FullName = userinfo.FullName;
+            uiv.DelFlag = userinfo.DelFlag;
+            uiv.ModifiedTime = userinfo.ModifiedTime;
+            uiv.JoinTime = userinfo.JoinTime;
+            return uiv;
         }
 
         // POST api/<controller>
